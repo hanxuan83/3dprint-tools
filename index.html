@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D打印工具导航 - 蟑螂恶霸的工具库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            max-width: 600px;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .category {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .category-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+
+        .category-title {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .category-count {
+            margin-left: auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .tool-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .tool-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .tool-url {
+            font-size: 0.85em;
+            color: #666;
+            word-break: break-all;
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            padding: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category {
+                padding: 15px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖨️ 3D打印工具导航</h1>
+            <p>蟑螂恶霸的工具库 · 精选 3D打印必备工具</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 搜索工具名称或网址..." />
+        </div>
+
+        <div class="stats" id="stats">
+            加载中...
+        </div>
+
+        <div id="categoriesContainer"></div>
+
+        <footer>
+            <p>Made with ❤️ for 3D Printing Community</p>
+            <p>最后更新：2026 年 3 月</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 工具数据
+        const toolsData = [{"folder":"书签栏/3D打印/工具网站","name":"AimKeys_Articulation_V1","url":"https://aiman3d.gumroad.com/l/keysart"},{"folder":"书签栏/3D打印/工具网站","name":"Free SVG Converter","url":"https://picsvg.com/"},{"folder":"书签栏/3D打印/工具网站","name":"Gearify","url":"https://www.gearify.io/"},{"folder":"书签栏/3D打印/工具网站","name":"Gridfinity 生成器","url":"https://gridfinity.perplexinglabs.com/"},{"folder":"书签栏/3D打印/工具网站","name":"HyDesign","url":"https://www.hyperganic.com/"},{"folder":"书签栏/3D打印/工具网站","name":"KIRI Engine","url":"https://www.kiriengine.app/"},{"folder":"书签栏/3D打印/工具网站","name":"Map2Model","url":"https://map2model.com/"},{"folder":"书签栏/3D打印/工具网站","name":"Mixamo","url":"https://www.mixamo.com/#/"},{"folder":"书签栏/3D打印/工具网站","name":"Otvinta","url":"https://otvinta.com/"},{"folder":"书签栏/3D打印/工具网站","name":"PNG 颜色分离器","url":"https://onlinepngtools.com/"},{"folder":"书签栏/3D打印/工具网站","name":"PS 在线","url":"https://www.photopea.com/"},{"folder":"书签栏/3D打印/工具网站","name":"Svg pattern","url":"https://www.freepik.com/search?format=search&last_filter=query&last_value=svg+pattern&query=svg+pattern"},{"folder":"书签栏/3D打印/工具网站","name":"Video to  GIF","url":"https://ezgif.com/video-to-gif"},{"folder":"书签栏/3D打印/工具网站","name":"丝网印刷用分色","url":"https://splitink.com/"},{"folder":"书签栏/3D打印/工具网站","name":"刀具轨迹","url":"https://www.tooltrace.ai/"},{"folder":"书签栏/3D打印/工具网站","name":"分色工具","url":"https://imageonline.io/screen-printing/"},{"folder":"书签栏/3D打印/工具网站","name":"单色浮雕","url":"https://tool.itslitho.com/createmodel"},{"folder":"书签栏/3D打印/工具网站","name":"图像转 DXF","url":"https://anyconv.com/image-to-dxf-converter/?utm_source=chatgpt.com"},{"folder":"书签栏/3D打印/工具网站/光影灯","name":"图片转代码","url":"https://jsfiddle.net/threonin/6dr8qu41/"},{"folder":"书签栏/3D打印/工具网站","name":"图片转加工格式（DFX）","url":"https://sheetzer.net/"},{"folder":"书签栏/3D打印/工具网站","name":"在线抠图","url":"https://www.remove.bg/zh"},{"folder":"书签栏/3D打印/工具网站/光影灯","name":"应用程序：定制器","url":"https://www.thingiverse.com/apps/customizer/run?thing_id=2094215"},{"folder":"书签栏/3D打印/工具网站/光影灯","name":"引子","url":"https://www.thingiverse.com/thing:2094215"},{"folder":"书签栏/3D打印/工具网站","name":"彩色 SVG","url":"https://svgco.de/"},{"folder":"书签栏/3D打印/工具网站","name":"彩色透光雕刻机","url":"https://lithophanemaker.com/Color%20Lithophane.html?fbclid=IwAR0zbiYVOGT2kV0MY4LtLbNk5rrg_wOd_bEsA2kpnxebZCTbBNzPyFu8h7g."},{"folder":"书签栏/3D打印/工具网站","name":"拼图","url":"https://puzzle.telegnom.org/"},{"folder":"书签栏/3D打印/工具网站","name":"收纳盒定制","url":"https://bento3d.design/"},{"folder":"书签栏/3D打印/工具网站","name":"整合包及模型下载链接","url":"https://www.yuque.com/baicaigongchang1145haoyuangong/ib3g1e/dkxgpiy9zb96hob4"},{"folder":"书签栏/3D打印/工具网站","name":"栅格动画","url":"https://scanimation.org/"},{"folder":"书签栏/3D打印/工具网站","name":"水晶生成器","url":"https://alexsmotivationspike.com/crystal-maker/"},{"folder":"书签栏/3D打印/工具网站","name":"点画转换器 - 将图像转换为点画","url":"https://www.dotartconverter.com/?utm_source=chatgpt.com"},{"folder":"书签栏/3D打印/工具网站","name":"镂空模型","url":"https://www.voronator.com/"}];
+
+        // 分类配置
+        const categoryConfig = {
+            '设计与建模': {
+                icon: '🎨',
+                keywords: ['design', 'model', 'gearify', 'bento3d', 'crystal', 'voronator', 'hydesign']
+            },
+            '图像处理': {
+                icon: '🖼️',
+                keywords: ['svg', 'png', 'photopea', 'remove.bg', 'converter', 'lithophane', 'dotart']
+            },
+            '扫描与重建': {
+                icon: '📷',
+                keywords: ['kiri', 'scan', 'map2model']
+            },
+            '工具与实用': {
+                icon: '🔧',
+                keywords: ['gridfinity', 'otvinta', 'puzzle', 'tooltrace', 'gif', 'customizer']
+            },
+            '资源与教程': {
+                icon: '📚',
+                keywords: ['thingiverse', 'yuque', 'mixamo']
+            }
+        };
+
+        // 自动分类工具
+        function categorizeTools(tools) {
+            const categories = {};
+            
+            // 初始化分类
+            Object.keys(categoryConfig).forEach(cat => {
+                categories[cat] = [];
+            });
+            categories['其他工具'] = [];
+
+            tools.forEach(tool => {
+                let matched = false;
+                const nameLower = tool.name.toLowerCase();
+                const urlLower = tool.url.toLowerCase();
+
+                for (const [category, config] of Object.entries(categoryConfig)) {
+                    if (config.keywords.some(keyword => 
+                        nameLower.includes(keyword) || urlLower.includes(keyword)
+                    )) {
+                        categories[category].push(tool);
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (!matched) {
+                    categories['其他工具'].push(tool);
+                }
+            });
+
+            return categories;
+        }
+
+        // 渲染分类
+        function renderCategories(categories) {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+
+            for (const [categoryName, tools] of Object.entries(categories)) {
+                if (tools.length === 0) continue;
+
+                const config = categoryConfig[categoryName] || { icon: '🛠️' };
+                
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.dataset.category = categoryName;
+
+                categoryDiv.innerHTML = `
+                    <div class="category-header">
+                        <span class="category-icon">${config.icon}</span>
+                        <h2 class="category-title">${categoryName}</h2>
+                        <span class="category-count">${tools.length} 个工具</span>
+                    </div>
+                    <div class="tools-grid">
+                        ${tools.map(tool => createToolCard(tool)).join('')}
+                    </div>
+                `;
+
+                container.appendChild(categoryDiv);
+            }
+
+            updateStats();
+        }
+
+        // 创建工具卡片
+        function createToolCard(tool) {
+            return `
+                <div class="tool-card" data-name="${tool.name.toLowerCase()}" data-url="${tool.url.toLowerCase()}">
+                    <div>
+                        <div class="tool-name">${escapeHtml(tool.name)}</div>
+                        <div class="tool-url">${escapeHtml(tool.url)}</div>
+                    </div>
+                    <div class="tool-actions">
+                        <a href="${escapeHtml(tool.url)}" target="_blank" class="btn btn-primary">访问网站</a>
+                        <button onclick="copyUrl('${escapeHtml(tool.url)}')" class="btn btn-secondary">复制链接</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 复制链接
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('✅ 链接已复制到剪贴板！');
+            }).catch(() => {
+                showToast('❌ 复制失败，请手动复制');
+            });
+        }
+
+        // 显示提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 更新统计
+        function updateStats() {
+            const total = toolsData.length;
+            const visible = document.querySelectorAll('.tool-card').length;
+            document.getElementById('stats').textContent = 
+                `共收录 ${total} 个工具${visible !== total ? ` · 显示 ${visible} 个` : ''}`;
+        }
+
+        // 搜索功能
+        function searchTools(query) {
+            const queryLower = query.toLowerCase();
+            const cards = document.querySelectorAll('.tool-card');
+            const categories = document.querySelectorAll('.category');
+
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                const url = card.dataset.url;
+                const matches = name.includes(queryLower) || url.includes(queryLower);
+                card.classList.toggle('hidden', !matches);
+            });
+
+            // 隐藏空分类
+            categories.forEach(category => {
+                const visibleCards = category.querySelectorAll('.tool-card:not(.hidden)').length;
+                category.classList.toggle('hidden', visibleCards === 0);
+            });
+
+            updateStats();
+        }
+
+        // 初始化
+        function init() {
+            const categories = categorizeTools(toolsData);
+            renderCategories(categories);
+
+            // 绑定搜索事件
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchTools(e.target.value);
+            });
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
